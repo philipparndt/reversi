@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import de.rnd7.kata.reversi.logic.GameLogic;
 import de.rnd7.kata.reversi.logic.NoMovePossibleException;
@@ -86,7 +87,7 @@ public class Main {
 			throw new NoMovePossibleException();
 		}
 
-		final Optional<Coordinate> bestMove = AILogic.bestMove(matrix, possibleCells.stream().map(Cell::getCoordinate));
+		final Optional<Coordinate> bestMove = AILogic.bestMove(matrix, possibleCells.stream().map(Cell::getCoordinate).collect(Collectors.toList()));
 		final Cell cell = field.getCell(bestMove.get());
 
 		gameLogic.apply(player, cell, output);

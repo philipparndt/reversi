@@ -16,8 +16,10 @@
 package de.rnd7.kata.reversi.logic.ai;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 import de.rnd7.kata.reversi.model.Coordinate;
 
@@ -25,8 +27,15 @@ public final class AILogic {
 	private AILogic() {
 	}
 
-	public static Optional<Coordinate> bestMove(final AIMatrix matrix, final Stream<Coordinate> possibleMoves) {
-		final Comparator<Coordinate> comp = Comparator.comparing(c -> matrix.get(c));
-		return possibleMoves.sorted(comp.reversed()).findFirst();
+	public static Optional<Coordinate> bestMove(final AIMatrix matrix, final List<Coordinate> possibleMoves) {
+		final Optional<Integer> bestMoveCount = possibleMoves.stream().map(matrix::get).sorted(Comparator.reverseOrder()).findFirst();
+		return bestMoveCount.map(bmc -> pickRandomElement(matrix, possibleMoves, bmc));
+	}
+
+	private static Coordinate pickRandomElement(final AIMatrix matrix, final List<Coordinate> possibleMoves, final int bestMoveCount) {
+		final List<Coordinate> bestMoves = possibleMoves.stream().filter(c -> matrix.get(c) == bestMoveCount).collect(Collectors.toList());
+
+		final int index = ThreadLocalRandom.current().nextInt(bestMoves.size());
+		return bestMoves.get(index);
 	}
 }
