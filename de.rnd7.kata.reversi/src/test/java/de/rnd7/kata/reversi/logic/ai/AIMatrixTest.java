@@ -24,7 +24,7 @@ import de.rnd7.kata.reversi.model.Coordinate;
 public class AIMatrixTest {
 	@Test
 	public void testLoadFromResource() throws Exception {
-		final AIMatrix matrix = AIMatrix.fromResource("black.txt");
+		final AIMatrix matrix = AIMatrix.fromResource("matrix.txt");
 		assertEquals(90, matrix.get(new Coordinate(0, 0)));
 		assertEquals(-90, matrix.get(new Coordinate(1, 0)));
 	}
