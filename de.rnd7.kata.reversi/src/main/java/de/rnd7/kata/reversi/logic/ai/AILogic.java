@@ -15,27 +15,41 @@
  */
 package de.rnd7.kata.reversi.logic.ai;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+import de.rnd7.kata.reversi.logic.GameLogic;
+import de.rnd7.kata.reversi.logic.NoMovePossibleException;
+import de.rnd7.kata.reversi.model.Cell;
+import de.rnd7.kata.reversi.model.CellState;
 import de.rnd7.kata.reversi.model.Coordinate;
+import de.rnd7.kata.reversi.model.GameField;
 
 public final class AILogic {
+
 	private AILogic() {
 	}
 
-	public static Optional<Coordinate> bestMove(final AIMatrix matrix, final List<Coordinate> possibleMoves) {
-		final Optional<Integer> bestMoveCount = possibleMoves.stream().map(matrix::get).sorted(Comparator.reverseOrder()).findFirst();
-		return bestMoveCount.map(bmc -> pickRandomElement(matrix, possibleMoves, bmc));
+	public static CellState nextPlayer(final CellState player) {
+		return player == CellState.BLACK ? CellState.WHITE : CellState.BLACK;
 	}
 
-	private static Coordinate pickRandomElement(final AIMatrix matrix, final List<Coordinate> possibleMoves, final int bestMoveCount) {
-		final List<Coordinate> bestMoves = possibleMoves.stream().filter(c -> matrix.get(c) == bestMoveCount).collect(Collectors.toList());
+	public static GameField move(final GameField field, final CellState player, final ReversiAI ai) throws NoMovePossibleException {
+		final List<Cell> possibleCells = AIUtils.getPossibleMoves(field, player);
 
-		final int index = ThreadLocalRandom.current().nextInt(bestMoves.size());
-		return bestMoves.get(index);
+		if (possibleCells.isEmpty()) {
+			throw new NoMovePossibleException();
+		}
+
+		final GameField output = AIUtils.cloneField(field);
+
+		final List<Coordinate> possibleMoves = possibleCells.stream().map(Cell::getCoordinate).collect(Collectors.toList());
+		final Coordinate move = ai.getMove(field, player, possibleMoves);
+
+		final GameLogic gameLogic = new GameLogic(field);
+		gameLogic.apply(player, output.getCell(move), output);
+
+		return output;
 	}
+
 }

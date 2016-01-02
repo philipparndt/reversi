@@ -16,44 +16,47 @@
 package de.rnd7.kata.reversi;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import de.rnd7.kata.reversi.logic.GameLogic;
 import de.rnd7.kata.reversi.logic.NoMovePossibleException;
 import de.rnd7.kata.reversi.logic.ai.AILogic;
 import de.rnd7.kata.reversi.logic.ai.AIMatrix;
-import de.rnd7.kata.reversi.model.Cell;
+import de.rnd7.kata.reversi.logic.ai.MatrixAI;
+import de.rnd7.kata.reversi.logic.ai.MinimaxAI;
+import de.rnd7.kata.reversi.logic.ai.ReversiAI;
 import de.rnd7.kata.reversi.model.CellState;
 import de.rnd7.kata.reversi.model.Coordinate;
 import de.rnd7.kata.reversi.model.GameField;
-import de.rnd7.kata.reversi.utils.GameFieldPrinter;
 
 public class Main {
 	public static void main(final String[] args) throws IOException {
-		GameField field = newField();
+		final GameField field = newField();
 
-		CellState player = CellState.WHITE;
-		int iteration = 1;
+		final CellState player = CellState.WHITE;
 
-		final AIMatrix white = AIMatrix.fromResource("white.txt");
-		final AIMatrix black = AIMatrix.fromResource("black.txt");
+		for (int i = 0; i < 100; i++) {
+			runGame(field, player);
+		}
+	}
+
+	private static void runGame(GameField field, CellState player) throws IOException {
+		final int iteration = 1;
+
+		final ReversiAI white = new MatrixAI(AIMatrix.fromResource("matrix.txt"));
+		final ReversiAI black = new MinimaxAI();
 
 		try {
 			while (true) {
-				System.out.println(String.format("Iteration #%d, Player: %s", iteration++, player));
+				// System.out.println(String.format("Iteration #%d, Player: %s",
+				// iteration++, player));
 				try {
-					field = move(field, player, getMatrix(player, white, black));
+					field = AILogic.move(field, player, getAI(player, white, black));
 				} catch (final NoMovePossibleException e) {
-					player = nextPlayer(player);
-					field = move(field, player, getMatrix(player, white, black));
+					player = AILogic.nextPlayer(player);
+					field = AILogic.move(field, player, getAI(player, white, black));
 				}
-				player = nextPlayer(player);
+				player = AILogic.nextPlayer(player);
 			}
 		} catch (final NoMovePossibleException e) {
-			System.out.println("Game completed");
 
 			final long whiteCount = field.countState(CellState.WHITE);
 			final long blackCount = field.countState(CellState.BLACK);
@@ -61,47 +64,15 @@ public class Main {
 			if (whiteCount == blackCount) {
 				System.out.println("The game was a draw.");
 			} else {
-				System.out.println(String.format("%d vs. %d, %s wins.", whiteCount, blackCount, blackCount > whiteCount ? "black" : "white"));
+				final String name = blackCount > whiteCount ? "black" : "white";
+				final String ainame = (blackCount > whiteCount ? black.getClass() : white.getClass()).getSimpleName();
+				System.out.println(String.format("%d vs. %d, %s wins. (%s)", whiteCount, blackCount, name, ainame));
 			}
 		}
 	}
 
-	private static AIMatrix getMatrix(final CellState player, final AIMatrix white, final AIMatrix black) {
+	private static ReversiAI getAI(final CellState player, final ReversiAI white, final ReversiAI black) {
 		return player == CellState.WHITE ? white : black;
-	}
-
-	private static GameField move(final GameField field, final CellState player, final AIMatrix matrix) throws NoMovePossibleException {
-		final GameField possibleMoves = cloneField(field);
-		final GameField output = cloneField(field);
-
-		final List<Cell> possibleCells = new ArrayList<Cell>();
-		final GameLogic gameLogic = new GameLogic(field);
-		for (final Cell cell : field.getCells()) {
-			if (gameLogic.isValidMove(player, cell)) {
-				possibleMoves.getCell(cell.getCoordinate()).setState(CellState.ALLOWED);
-				possibleCells.add(cell);
-			}
-		}
-
-		if (possibleCells.isEmpty()) {
-			throw new NoMovePossibleException();
-		}
-
-		final Optional<Coordinate> bestMove = AILogic.bestMove(matrix, possibleCells.stream().map(Cell::getCoordinate).collect(Collectors.toList()));
-		final Cell cell = field.getCell(bestMove.get());
-
-		gameLogic.apply(player, cell, output);
-
-		System.out.println("Possible:");
-		System.out.println(GameFieldPrinter.print(possibleMoves));
-		System.out.println("Done:");
-		System.out.println(GameFieldPrinter.print(output));
-
-		return output;
-	}
-
-	private static CellState nextPlayer(final CellState player) {
-		return player == CellState.BLACK ? CellState.WHITE : CellState.BLACK;
 	}
 
 	private static GameField newField() {
@@ -115,13 +86,4 @@ public class Main {
 		return gameField;
 	}
 
-	private static GameField cloneField(final GameField original) {
-		final GameField gameField = new GameField();
-
-		for (final Cell cell : original.getCells()) {
-			gameField.getCell(cell.getCoordinate()).setState(cell.getState());
-		}
-
-		return gameField;
-	}
 }
