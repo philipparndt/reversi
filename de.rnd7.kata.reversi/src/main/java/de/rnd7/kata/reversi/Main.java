@@ -20,8 +20,8 @@ import java.io.IOException;
 import de.rnd7.kata.reversi.logic.NoMovePossibleException;
 import de.rnd7.kata.reversi.logic.ai.AILogic;
 import de.rnd7.kata.reversi.logic.ai.AIMatrix;
+import de.rnd7.kata.reversi.logic.ai.AlphaBetaPruningAI;
 import de.rnd7.kata.reversi.logic.ai.MatrixAI;
-import de.rnd7.kata.reversi.logic.ai.MinimaxAI;
 import de.rnd7.kata.reversi.logic.ai.ReversiAI;
 import de.rnd7.kata.reversi.model.CellState;
 import de.rnd7.kata.reversi.model.Coordinate;
@@ -42,7 +42,7 @@ public class Main {
 		final int iteration = 1;
 
 		final ReversiAI white = new MatrixAI(AIMatrix.fromResource("matrix.txt"));
-		final ReversiAI black = new MinimaxAI();
+		final ReversiAI black = new AlphaBetaPruningAI();
 
 		try {
 			while (true) {
