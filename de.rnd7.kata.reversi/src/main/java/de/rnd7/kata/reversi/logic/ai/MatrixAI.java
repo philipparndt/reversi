@@ -35,15 +35,27 @@ public class MatrixAI implements ReversiAI {
 
 	@Override
 	public Coordinate getMove(final GameField field, final CellState player, final List<Coordinate> possibleMoves) {
-		final Optional<Integer> bestValue = possibleMoves.stream().map(this.matrix::get).sorted(Comparator.reverseOrder()).findFirst();
+		final Optional<Integer> bestValue = this.getBestValue(possibleMoves);
 		return bestValue.map(best -> pickRandomElement(this.matrix, possibleMoves, best)).get();
 	}
 
+	Optional<Integer> getBestValue(final List<Coordinate> possibleMoves) {
+		return possibleMoves.stream().map(this.matrix::get).sorted(Comparator.reverseOrder()).findFirst();
+	}
+
 	private static Coordinate pickRandomElement(final AIMatrix matrix, final List<Coordinate> possibleMoves, final int bestValue) {
-		final List<Coordinate> bestMoves = possibleMoves.stream().filter(c -> matrix.get(c) == bestValue).collect(Collectors.toList());
+		final List<Coordinate> bestMoves = filterMoves(matrix, possibleMoves, bestValue);
 
 		final int index = ThreadLocalRandom.current().nextInt(bestMoves.size());
 		return bestMoves.get(index);
 	}
 
+	private static List<Coordinate> filterMoves(final AIMatrix matrix, final List<Coordinate> possibleMoves, final int bestValue) {
+		final List<Coordinate> bestMoves = possibleMoves.stream().filter(c -> matrix.get(c) == bestValue).collect(Collectors.toList());
+		return bestMoves;
+	}
+
+	public AIMatrix getMatrix() {
+		return this.matrix;
+	}
 }

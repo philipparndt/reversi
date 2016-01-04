@@ -20,8 +20,9 @@ import java.io.IOException;
 import de.rnd7.kata.reversi.logic.NoMovePossibleException;
 import de.rnd7.kata.reversi.logic.ai.AILogic;
 import de.rnd7.kata.reversi.logic.ai.AIMatrix;
-import de.rnd7.kata.reversi.logic.ai.AlphaBetaPruningAI;
 import de.rnd7.kata.reversi.logic.ai.MatrixAI;
+import de.rnd7.kata.reversi.logic.ai.MatrixAI2;
+import de.rnd7.kata.reversi.logic.ai.MinimaxAI;
 import de.rnd7.kata.reversi.logic.ai.ReversiAI;
 import de.rnd7.kata.reversi.model.CellState;
 import de.rnd7.kata.reversi.model.Coordinate;
@@ -33,21 +34,34 @@ public class Main {
 
 		final CellState player = CellState.WHITE;
 
+		final ReversiAI white = new MinimaxAI(); // new MatrixAI(AIMatrix.fromResource("matrix.txt"));
+		final ReversiAI black = new MatrixAI2(new MatrixAI(AIMatrix.fromResource("matrix.txt"))); //
+
+		int draw = 0;
+		int whiteWins = 0;
+		int blackWins = 0;
+
 		for (int i = 0; i < 100; i++) {
-			runGame(field, player);
+			System.out.print(".");
+			switch (runGame(field, player, black, white)) {
+			case BLACK:
+				blackWins++;
+				break;
+			case WHITE:
+				whiteWins++;
+				break;
+			default:
+				draw++;
+			}
 		}
+
+		System.out.println(String.format("\n\nDraw: %d\n%s: %d\n%s: %d\n", draw, black.getClass().getSimpleName(), blackWins, white.getClass().getSimpleName(), whiteWins));
 	}
 
-	private static void runGame(GameField field, CellState player) throws IOException {
-		final int iteration = 1;
-
-		final ReversiAI white = new MatrixAI(AIMatrix.fromResource("matrix.txt"));
-		final ReversiAI black = new AlphaBetaPruningAI();
+	private static CellState runGame(GameField field, CellState player, final ReversiAI black, final ReversiAI white) throws IOException {
 
 		try {
 			while (true) {
-				// System.out.println(String.format("Iteration #%d, Player: %s",
-				// iteration++, player));
 				try {
 					field = AILogic.move(field, player, getAI(player, white, black));
 				} catch (final NoMovePossibleException e) {
@@ -62,11 +76,9 @@ public class Main {
 			final long blackCount = field.countState(CellState.BLACK);
 
 			if (whiteCount == blackCount) {
-				System.out.println("The game was a draw.");
+				return CellState.EMPTY;
 			} else {
-				final String name = blackCount > whiteCount ? "black" : "white";
-				final String ainame = (blackCount > whiteCount ? black.getClass() : white.getClass()).getSimpleName();
-				System.out.println(String.format("%d vs. %d, %s wins. (%s)", whiteCount, blackCount, name, ainame));
+				return blackCount > whiteCount ? CellState.BLACK : CellState.WHITE;
 			}
 		}
 	}
