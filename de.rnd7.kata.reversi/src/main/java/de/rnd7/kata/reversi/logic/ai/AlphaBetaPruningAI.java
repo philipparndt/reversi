@@ -27,7 +27,7 @@ import de.rnd7.kata.reversi.model.GameField;
 
 public class AlphaBetaPruningAI implements ReversiAI {
 
-	private static final int DEPTH = 3;
+	private static final int DEPTH = 5;
 	private final AIMatrix matrix;
 
 	private class State {

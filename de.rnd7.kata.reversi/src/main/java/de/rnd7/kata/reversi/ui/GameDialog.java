@@ -23,7 +23,7 @@ import de.rnd7.kata.reversi.logic.GameLogic;
 import de.rnd7.kata.reversi.logic.NoMovePossibleException;
 import de.rnd7.kata.reversi.logic.ai.AILogic;
 import de.rnd7.kata.reversi.logic.ai.AIMatrix;
-import de.rnd7.kata.reversi.logic.ai.MinimaxAI;
+import de.rnd7.kata.reversi.logic.ai.AlphaBetaPruningAI;
 import de.rnd7.kata.reversi.logic.ai.ReversiAI;
 import de.rnd7.kata.reversi.model.Cell;
 import de.rnd7.kata.reversi.model.CellState;
@@ -51,7 +51,7 @@ public class GameDialog {
 	public GameDialog() throws IOException {
 		final AIMatrix matrix = AIMatrix.fromResource("matrix.txt");
 
-		this.white = new MinimaxAI(); // MatrixAI(matrix);
+		this.white = new AlphaBetaPruningAI(); // MatrixAI(matrix);
 		this.black = new HumanPlayerAI(); // new MatrixAI2(new
 											// MatrixAI(matrix));
 

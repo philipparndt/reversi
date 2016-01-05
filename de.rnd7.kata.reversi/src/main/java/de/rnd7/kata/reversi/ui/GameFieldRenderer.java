@@ -46,9 +46,6 @@ public class GameFieldRenderer implements PaintListener {
 
 		gc.fillRectangle(0, 0, GameUtils.COLS * CELL_SIZE, GameUtils.COLS * CELL_SIZE);
 
-		gc.setForeground(gc.getDevice().getSystemColor(SWT.COLOR_BLACK));
-		gc.setBackground(gc.getDevice().getSystemColor(SWT.COLOR_CYAN));
-
 		for (int x = 0; x < GameUtils.COLS; x++) {
 			for (int y = 0; y < GameUtils.COLS; y++) {
 
@@ -78,6 +75,8 @@ public class GameFieldRenderer implements PaintListener {
 				}
 			}
 		}
+
+		gc.setForeground(gc.getDevice().getSystemColor(SWT.COLOR_DARK_GRAY));
 
 		for (int x = 0; x < GameUtils.COLS; x++) {
 			final int xx = x * CELL_SIZE;
