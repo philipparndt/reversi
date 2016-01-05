@@ -22,7 +22,6 @@ import de.rnd7.kata.reversi.logic.ai.AILogic;
 import de.rnd7.kata.reversi.logic.ai.AIMatrix;
 import de.rnd7.kata.reversi.logic.ai.MatrixAI;
 import de.rnd7.kata.reversi.logic.ai.MatrixAI2;
-import de.rnd7.kata.reversi.logic.ai.MinimaxAI;
 import de.rnd7.kata.reversi.logic.ai.ReversiAI;
 import de.rnd7.kata.reversi.model.CellState;
 import de.rnd7.kata.reversi.model.Coordinate;
@@ -34,7 +33,7 @@ public class Main {
 
 		final CellState player = CellState.WHITE;
 
-		final ReversiAI white = new MinimaxAI(); // new MatrixAI(AIMatrix.fromResource("matrix.txt"));
+		final ReversiAI white = new MatrixAI(AIMatrix.fromResource("matrix.txt"));
 		final ReversiAI black = new MatrixAI2(new MatrixAI(AIMatrix.fromResource("matrix.txt"))); //
 
 		int draw = 0;

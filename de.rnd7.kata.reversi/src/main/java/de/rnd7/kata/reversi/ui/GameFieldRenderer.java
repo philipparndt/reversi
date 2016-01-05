@@ -78,12 +78,12 @@ public class GameFieldRenderer implements PaintListener {
 
 		for (int x = 0; x < GameUtils.COLS; x++) {
 			final int xx = x * CELL_SIZE;
-			gc.drawLine(xx, 0, xx, GameUtils.COLS * CELL_SIZE);
+			gc.drawLine(xx, 0, xx, (GameUtils.COLS * CELL_SIZE) - 1);
 		}
 
 		for (int y = 0; y < GameUtils.COLS; y++) {
 			final int yy = y * CELL_SIZE;
-			gc.drawLine(0, yy, GameUtils.COLS * CELL_SIZE, yy);
+			gc.drawLine(0, yy, (GameUtils.COLS * CELL_SIZE) - 1, yy);
 		}
 	}
 

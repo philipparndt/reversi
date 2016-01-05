@@ -1,8 +1,11 @@
 package de.rnd7.kata.reversi.ui;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Rectangle;
@@ -15,12 +18,14 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
+import de.rnd7.kata.reversi.logic.GameLogic;
 import de.rnd7.kata.reversi.logic.NoMovePossibleException;
 import de.rnd7.kata.reversi.logic.ai.AILogic;
 import de.rnd7.kata.reversi.logic.ai.AIMatrix;
 import de.rnd7.kata.reversi.logic.ai.MatrixAI;
 import de.rnd7.kata.reversi.logic.ai.MatrixAI2;
 import de.rnd7.kata.reversi.logic.ai.ReversiAI;
+import de.rnd7.kata.reversi.model.Cell;
 import de.rnd7.kata.reversi.model.CellState;
 import de.rnd7.kata.reversi.model.Coordinate;
 import de.rnd7.kata.reversi.model.GameField;
@@ -72,29 +77,42 @@ public class GameDialog {
 		final GameFieldRenderer renderer = new GameFieldRenderer(this.field);
 		canvas.addPaintListener(renderer);
 
-		// canvas.addMouseListener(new MouseAdapter() {
-		// @Override
-		// public void mouseDown(final MouseEvent e) {
-		// final int x = e.x / GameFieldRenderer.CELL_SIZE;
-		// final int y = e.y / GameFieldRenderer.CELL_SIZE;
-		//
-		// final GameField gameField = engine.getGameField();
-		//
-		// if ((x >= 0) && (y >= 0) && (gameField.getWidth() >= x) &&
-		// (gameField.getHeight() >= y)) {
-		//
-		// final Cell cell = gameField.getCellAt(x, y);
-		// if (cell == null) {
-		// gameField.createCell(new Cell(x, y));
-		// } else {
-		// gameField.destoryCell(cell);
-		// }
-		// }
-		//
-		// canvas.redraw();
-		//
-		// }
-		// });
+		canvas.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(final MouseEvent e) {
+				final int x = e.x / GameFieldRenderer.CELL_SIZE;
+				final int y = e.y / GameFieldRenderer.CELL_SIZE;
+
+				final Cell cell = GameDialog.this.field.getCell(new Coordinate(x, y));
+
+				final GameLogic gameLogic = new GameLogic(GameDialog.this.field);
+				GameDialog.this.player = CellState.BLACK;
+				if (!gameLogic.isValidMove(GameDialog.this.player, cell)) {
+					return;
+				}
+
+				final ReversiAI reversiAI = new ReversiAI() {
+					@Override
+					public Coordinate getMove(final GameField field, final CellState player, final List<Coordinate> possibleMoves) {
+						return cell.getCoordinate();
+					}
+				};
+
+				try {
+					GameDialog.this.field = AILogic.move(GameDialog.this.field, GameDialog.this.player, reversiAI);
+					renderer.setField(GameDialog.this.field);
+
+					GameDialog.this.player = CellState.WHITE;
+				} catch (final NoMovePossibleException e1) {
+					e1.printStackTrace();
+				} finally {
+
+				}
+
+				canvas.redraw();
+
+			}
+		});
 		nextGenButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
@@ -102,6 +120,7 @@ public class GameDialog {
 				GameDialog.this.field = GameDialog.this.runGame(GameDialog.this.field);
 				System.out.println(GameFieldPrinter.print(GameDialog.this.field));
 				renderer.setField(GameDialog.this.field);
+
 				// engine.nextGeneration();
 				//
 				// label.setText(String.format("Generation: %d",
@@ -110,19 +129,6 @@ public class GameDialog {
 				canvas.redraw();
 			}
 		});
-		// clear.addSelectionListener(new SelectionAdapter() {
-		// @Override
-		// public void widgetSelected(final SelectionEvent e) {
-		// engine.clear();
-		// canvas.redraw();
-		// }
-		// });
-		// print.addSelectionListener(new SelectionAdapter() {
-		// @Override
-		// public void widgetSelected(final SelectionEvent e) {
-		// GameFieldPrinter.printField(engine.getGameField());
-		// }
-		// });
 
 		final Rectangle clientArea = shell.getClientArea();
 		shell.setBounds(clientArea.x + 10, clientArea.y + 10, 300, 300);
@@ -146,16 +152,6 @@ public class GameDialog {
 			}
 			this.player = AILogic.nextPlayer(this.player);
 		} catch (final NoMovePossibleException e) {
-			//
-			// final long whiteCount = field.countState(CellState.WHITE);
-			// final long blackCount = field.countState(CellState.BLACK);
-			//
-			// if (whiteCount == blackCount) {
-			// return CellState.EMPTY;
-			// } else {
-			// return blackCount > whiteCount ? CellState.BLACK :
-			// CellState.WHITE;
-			// }
 		}
 
 		return result;
