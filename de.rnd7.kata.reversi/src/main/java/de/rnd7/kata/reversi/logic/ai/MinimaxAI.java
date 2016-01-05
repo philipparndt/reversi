@@ -26,7 +26,7 @@ import de.rnd7.kata.reversi.model.GameField;
 
 public class MinimaxAI implements ReversiAI {
 
-	private static final int MAX_DEPTH = 2;
+	private static final int MAX_DEPTH = 6;
 
 	@Override
 	public Coordinate getMove(final GameField field, final CellState player, final List<Coordinate> possibleMoves) {

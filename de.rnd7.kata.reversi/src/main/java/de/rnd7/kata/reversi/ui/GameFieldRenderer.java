@@ -27,7 +27,7 @@ import de.rnd7.kata.reversi.model.GameUtils;
 
 public class GameFieldRenderer implements PaintListener {
 
-	static final int CELL_SIZE = 16;
+	static final int CELL_SIZE = 20;
 	private GameField field;
 
 	public GameFieldRenderer(final GameField field) {
@@ -58,18 +58,21 @@ public class GameFieldRenderer implements PaintListener {
 				final Cell cell = this.field.getCell(new Coordinate(x, y));
 
 				if (cell != null) {
+					gc.setBackground(gc.getDevice().getSystemColor(SWT.COLOR_DARK_GREEN));
+					gc.fillRectangle(xx, yy, CELL_SIZE, CELL_SIZE);
+
 					switch (cell.getState()) {
 					case WHITE:
 						gc.setBackground(gc.getDevice().getSystemColor(SWT.COLOR_WHITE));
+						gc.fillOval(xx + 1, yy + 1, CELL_SIZE - 1, CELL_SIZE - 1);
 						break;
 					case BLACK:
 						gc.setBackground(gc.getDevice().getSystemColor(SWT.COLOR_BLACK));
+						gc.fillOval(xx + 1, yy + 1, CELL_SIZE - 1, CELL_SIZE - 1);
 						break;
 					default:
-						gc.setBackground(gc.getDevice().getSystemColor(SWT.COLOR_DARK_GREEN));
 						break;
 					}
-					gc.fillRectangle(xx, yy, CELL_SIZE, CELL_SIZE);
 				} else {
 					gc.setBackground(gc.getDevice().getSystemColor(SWT.COLOR_DARK_GRAY));
 				}
