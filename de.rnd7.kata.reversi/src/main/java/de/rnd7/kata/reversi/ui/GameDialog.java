@@ -2,6 +2,7 @@ package de.rnd7.kata.reversi.ui;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
@@ -20,42 +21,30 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
 import de.rnd7.kata.reversi.logic.GameLogic;
-import de.rnd7.kata.reversi.logic.NoMovePossibleException;
-import de.rnd7.kata.reversi.logic.ai.AILogic;
 import de.rnd7.kata.reversi.logic.ai.AIMatrix;
 import de.rnd7.kata.reversi.logic.ai.AlphaBetaPruningAI;
 import de.rnd7.kata.reversi.logic.ai.ReversiAI;
 import de.rnd7.kata.reversi.model.Cell;
 import de.rnd7.kata.reversi.model.CellState;
 import de.rnd7.kata.reversi.model.Coordinate;
-import de.rnd7.kata.reversi.model.GameField;
 
 public class GameDialog {
 	private final ReversiAI white;
 	private final ReversiAI black;
-	private CellState player = CellState.WHITE;
-	private GameField field;
+	// private CellState player = CellState.WHITE;
+	// private GameField field;
 	private final Shell shell;
 
-	private static GameField newField() {
-		final GameField gameField = new GameField();
-
-		gameField.getCell(new Coordinate(3, 3)).setState(CellState.BLACK);
-		gameField.getCell(new Coordinate(3, 4)).setState(CellState.WHITE);
-		gameField.getCell(new Coordinate(4, 3)).setState(CellState.WHITE);
-		gameField.getCell(new Coordinate(4, 4)).setState(CellState.BLACK);
-
-		return gameField;
-	}
+	private final GameController controller = new GameController();
 
 	public GameDialog() throws IOException {
 		final AIMatrix matrix = AIMatrix.fromResource("matrix.txt");
 
 		this.white = new AlphaBetaPruningAI(); // MatrixAI(matrix);
-		this.black = new HumanPlayerAI(); // new MatrixAI2(new
-											// MatrixAI(matrix));
+		this.black = null; // new MatrixAI2(new
+							// MatrixAI(matrix));
 
-		this.field = newField();
+		// this.field = newField();
 
 		final Display display = new Display();
 		this.shell = new Shell(display);
@@ -75,7 +64,7 @@ public class GameDialog {
 
 		final Canvas canvas = new Canvas(this.shell, SWT.BORDER);
 		canvas.setLayoutData(new GridData(GridData.FILL_BOTH));
-		final GameFieldRenderer renderer = new GameFieldRenderer(this.field);
+		final GameFieldRenderer renderer = new GameFieldRenderer(this.controller);
 		canvas.addPaintListener(renderer);
 
 		canvas.addMouseListener(new MouseAdapter() {
@@ -84,7 +73,7 @@ public class GameDialog {
 				final int x = e.x / GameFieldRenderer.CELL_SIZE;
 				final int y = e.y / GameFieldRenderer.CELL_SIZE;
 				try {
-					final Cell cell = GameDialog.this.field.getCell(new Coordinate(x, y));
+					final Cell cell = GameDialog.this.controller.getField().getCell(new Coordinate(x, y));
 					GameDialog.this.humanPlay(canvas, renderer, cell);
 				} catch (final IllegalArgumentException e1) {
 					// Can be ignored here
@@ -94,8 +83,12 @@ public class GameDialog {
 		nextGenButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
-				GameDialog.this.field = GameDialog.this.runGame(GameDialog.this.field);
-				renderer.setField(GameDialog.this.field);
+				final List<Cell> possibleCells = GameDialog.this.controller.getPossible();
+				if (!possibleCells.isEmpty()) {
+					final List<Coordinate> possibleMoves = possibleCells.stream().map(Cell::getCoordinate).collect(Collectors.toList());
+					final Coordinate move = GameDialog.this.white.getMove(GameDialog.this.controller.getField(), CellState.WHITE, possibleMoves);
+					GameDialog.this.controller.doMove(CellState.WHITE, move);
+				}
 
 				canvas.redraw();
 			}
@@ -113,47 +106,19 @@ public class GameDialog {
 	}
 
 	private void humanPlay(final Canvas canvas, final GameFieldRenderer renderer, final Cell cell) {
-		final GameLogic gameLogic = new GameLogic(GameDialog.this.field);
-		GameDialog.this.player = CellState.BLACK;
-		if (!gameLogic.isValidMove(GameDialog.this.player, cell)) {
+		final GameLogic gameLogic = new GameLogic(this.controller.getField());
+		if (!gameLogic.isValidMove(CellState.BLACK, cell)) {
 			return;
 		}
 
-		final ReversiAI reversiAI = new ReversiAI() {
-			@Override
-			public Coordinate getMove(final GameField field, final CellState player, final List<Coordinate> possibleMoves) {
-				return cell.getCoordinate();
-			}
-		};
-
 		try {
-			GameDialog.this.field = AILogic.move(GameDialog.this.field, GameDialog.this.player, reversiAI);
-			renderer.setField(GameDialog.this.field);
-
-			GameDialog.this.player = CellState.WHITE;
-		} catch (final NoMovePossibleException e1) {
-			e1.printStackTrace();
-		} finally {
-
+			this.controller.doMove(CellState.BLACK, cell.getCoordinate());
+		} catch (final Exception e1) {
+			final MessageBox messageBox = new MessageBox(this.shell, SWT.OK | SWT.ICON_INFORMATION);
+			messageBox.setMessage(e1.getMessage());
+			messageBox.open();
 		}
 
 		canvas.redraw();
-	}
-
-	private GameField runGame(final GameField field) {
-		GameField result = field;
-		try {
-			result = AILogic.move(field, this.player, this.getAI(this.player));
-			this.player = AILogic.nextPlayer(this.player);
-		} catch (IllegalStateException | NoMovePossibleException e) {
-			final MessageBox messageBox = new MessageBox(this.shell, SWT.OK | SWT.ICON_INFORMATION);
-			messageBox.setMessage("It's your turn!");
-			messageBox.open();
-		}
-		return result;
-	}
-
-	private ReversiAI getAI(final CellState player) {
-		return player == CellState.WHITE ? this.white : this.black;
 	}
 }

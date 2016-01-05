@@ -22,20 +22,15 @@ import org.eclipse.swt.graphics.GC;
 
 import de.rnd7.kata.reversi.model.Cell;
 import de.rnd7.kata.reversi.model.Coordinate;
-import de.rnd7.kata.reversi.model.GameField;
 import de.rnd7.kata.reversi.model.GameUtils;
 
 public class GameFieldRenderer implements PaintListener {
 
 	static final int CELL_SIZE = 20;
-	private GameField field;
+	private final GameController controller;
 
-	public GameFieldRenderer(final GameField field) {
-		this.field = field;
-	}
-
-	public void setField(final GameField field) {
-		this.field = field;
+	public GameFieldRenderer(final GameController controller) {
+		this.controller = controller;
 	}
 
 	@Override
@@ -52,7 +47,7 @@ public class GameFieldRenderer implements PaintListener {
 				final int xx = x * CELL_SIZE;
 				final int yy = y * CELL_SIZE;
 
-				final Cell cell = this.field.getCell(new Coordinate(x, y));
+				final Cell cell = this.controller.getField().getCell(new Coordinate(x, y));
 
 				if (cell != null) {
 					gc.setBackground(gc.getDevice().getSystemColor(SWT.COLOR_DARK_GREEN));

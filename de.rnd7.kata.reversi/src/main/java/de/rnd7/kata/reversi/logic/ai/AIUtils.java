@@ -25,7 +25,7 @@ import de.rnd7.kata.reversi.model.GameField;
 
 public class AIUtils {
 
-	static GameField cloneField(final GameField original) {
+	public static GameField cloneField(final GameField original) {
 		final GameField gameField = new GameField();
 
 		for (final Cell cell : original.getCells()) {
@@ -35,7 +35,7 @@ public class AIUtils {
 		return gameField;
 	}
 
-	static List<Cell> getPossibleMoves(final GameField field, final CellState player) {
+	public static List<Cell> getPossibleMoves(final GameField field, final CellState player) {
 		final GameField possibleMoves = cloneField(field);
 
 		final List<Cell> possibleCells = new ArrayList<Cell>();
