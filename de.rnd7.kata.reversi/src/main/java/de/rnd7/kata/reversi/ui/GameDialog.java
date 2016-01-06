@@ -2,6 +2,7 @@ package de.rnd7.kata.reversi.ui;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.swt.SWT;
@@ -56,8 +57,8 @@ public class GameDialog {
 		composite.setLayout(new GridLayout(4, false));
 		composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-		final Button nextGenButton = new Button(composite, SWT.NONE);
-		nextGenButton.setText("AI Play");
+		final Button aiPlay = new Button(composite, SWT.NONE);
+		aiPlay.setText("AI Play");
 
 		final Label label = new Label(this.shell, SWT.NONE);
 		label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -70,28 +71,16 @@ public class GameDialog {
 		canvas.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(final MouseEvent e) {
-				final int x = e.x / GameFieldRenderer.CELL_SIZE;
-				final int y = e.y / GameFieldRenderer.CELL_SIZE;
-				try {
-					final Cell cell = GameDialog.this.controller.getField().getCell(new Coordinate(x, y));
-					GameDialog.this.humanPlay(canvas, renderer, cell);
-				} catch (final IllegalArgumentException e1) {
-					// Can be ignored here
-				}
+				GameDialog.this.toCell(e).ifPresent(cell -> GameDialog.this.blackPlay(canvas, renderer, cell));
 			}
+
 		});
-		nextGenButton.addSelectionListener(new SelectionAdapter() {
+		aiPlay.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
-				final List<Cell> possibleCells = GameDialog.this.controller.getPossible();
-				if (!possibleCells.isEmpty()) {
-					final List<Coordinate> possibleMoves = possibleCells.stream().map(Cell::getCoordinate).collect(Collectors.toList());
-					final Coordinate move = GameDialog.this.white.getMove(GameDialog.this.controller.getField(), CellState.WHITE, possibleMoves);
-					GameDialog.this.controller.doMove(CellState.WHITE, move);
-				}
-
-				canvas.redraw();
+				GameDialog.this.whitePlay(canvas);
 			}
+
 		});
 
 		final Rectangle clientArea = this.shell.getClientArea();
@@ -105,7 +94,28 @@ public class GameDialog {
 		display.dispose();
 	}
 
-	private void humanPlay(final Canvas canvas, final GameFieldRenderer renderer, final Cell cell) {
+	private Optional<Cell> toCell(final MouseEvent e) {
+		final int x = e.x / GameFieldRenderer.CELL_SIZE;
+		final int y = e.y / GameFieldRenderer.CELL_SIZE;
+		try {
+			return Optional.of(this.controller.getField().getCell(new Coordinate(x, y)));
+		} catch (final IllegalArgumentException e1) {
+			return Optional.empty();
+		}
+	}
+
+	private void whitePlay(final Canvas canvas) {
+		final List<Cell> possibleCells = this.controller.getPossible();
+		if (!possibleCells.isEmpty()) {
+			final List<Coordinate> possibleMoves = possibleCells.stream().map(Cell::getCoordinate).collect(Collectors.toList());
+			final Coordinate move = this.white.getMove(this.controller.getField(), CellState.WHITE, possibleMoves);
+			this.controller.doMove(CellState.WHITE, move);
+		}
+
+		canvas.redraw();
+	}
+
+	private void blackPlay(final Canvas canvas, final GameFieldRenderer renderer, final Cell cell) {
 		final GameLogic gameLogic = new GameLogic(this.controller.getField());
 		if (!gameLogic.isValidMove(CellState.BLACK, cell)) {
 			return;
