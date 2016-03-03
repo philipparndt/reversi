@@ -24,9 +24,11 @@ public class MinimumMoveAI implements ReversiAI {
 			GameField newField = applyMove(field, player, field.getCell(c));
 			long changedFields = compare(player, field, newField);
 			if (isPreCorner(c)) {
-				penalty += 10;
+				penalty += 30;
 			} else if (isEdge(c)) {
 				penalty -= 10;
+			} else if (isCorner(c)) {
+				penalty -= 0;
 			}
 			rankedCoordinates.put(Math.min(changedFields + penalty, 0), c);
 		}
@@ -43,7 +45,10 @@ public class MinimumMoveAI implements ReversiAI {
 	private boolean isEdge(Coordinate c) {
 		return countNeighbors(c) == 5;
 	}
-
+	
+	private boolean isCorner(Coordinate c) {
+		return countNeighbors(c) == 3;
+	}
 
 	private int countNeighbors(Coordinate c) {
 		int i = 0;

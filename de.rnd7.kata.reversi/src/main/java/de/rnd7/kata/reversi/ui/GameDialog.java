@@ -34,13 +34,19 @@ import de.rnd7.kata.reversi.logic.ai.ReversiAI;
 import de.rnd7.kata.reversi.model.Cell;
 import de.rnd7.kata.reversi.model.CellState;
 import de.rnd7.kata.reversi.model.Coordinate;
+import oxytu.logic.ai.MinimumMoveAI;
 
 public class GameDialog {
 	private ReversiAI white;
 	private final Shell shell;
 
 	private final AIMatrix matrix = AIMatrix.fromResource("matrix.txt");
-	private final ImmutableList<ReversiAI> ais = ImmutableList.of(new MatrixAI(this.matrix), new MatrixAI2(new MatrixAI(this.matrix)), new AlphaBetaPruningAI(), new MinimaxAI());
+	private final ImmutableList<ReversiAI> ais = ImmutableList.of(
+			new MatrixAI(this.matrix), 
+			new MatrixAI2(new MatrixAI(this.matrix)), 
+			new AlphaBetaPruningAI(), 
+			new MinimaxAI(),
+			new MinimumMoveAI());
 	private final Map<String, ReversiAI> aiMap = this.ais.stream().collect(Collectors.toMap(x -> x.getClass().getSimpleName(), x -> x));
 
 	private final GameController controller = new GameController();
