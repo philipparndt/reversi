@@ -35,7 +35,7 @@ public final class AILogic {
 	}
 
 	public static GameField move(final GameField field, final CellState player, final ReversiAI ai) throws NoMovePossibleException {
-		final List<Cell> possibleCells = AIUtils.getPossibleMoves(field, player);
+		final List<Cell> possibleCells = AIUtils.getPossibleMoves(AIUtils.cloneField(field), player);
 
 		if (possibleCells.isEmpty()) {
 			throw new NoMovePossibleException();
