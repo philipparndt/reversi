@@ -43,10 +43,10 @@ public class Main {
 
 		final CellState player = CellState.WHITE;
 
-		final ReversiAI white = new MatrixAI(AIMatrix.fromResource("matrix.txt"));
+		// final ReversiAI white = new MatrixAI(AIMatrix.fromResource("matrix.txt"));
+		final ReversiAI white = new MatrixAI2(new MatrixAI(AIMatrix.fromResource("matrix.txt"))); //
 		final ReversiAI black = new MinimumMoveAI(); //
 		
-		//final ReversiAI black = new MatrixAI2(new MatrixAI(AIMatrix.fromResource("matrix.txt"))); //
 
 		int draw = 0;
 		int whiteWins = 0;
@@ -54,7 +54,7 @@ public class Main {
 		
 		List<CellState> endStates = Collections.synchronizedList(new ArrayList<>());
 
-		for (int i = 0; i < 100000; i++) {
+		for (int i = 0; i < 100; i++) {
 			System.out.print(".");
 			runGameAsynchronous(endStates, field, player, black, white);
 		}
