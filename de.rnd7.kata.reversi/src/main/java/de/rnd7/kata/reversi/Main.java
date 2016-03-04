@@ -16,6 +16,13 @@
 package de.rnd7.kata.reversi;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import de.rnd7.kata.reversi.logic.NoMovePossibleException;
 import de.rnd7.kata.reversi.logic.ai.AILogic;
@@ -26,23 +33,41 @@ import de.rnd7.kata.reversi.logic.ai.ReversiAI;
 import de.rnd7.kata.reversi.model.CellState;
 import de.rnd7.kata.reversi.model.Coordinate;
 import de.rnd7.kata.reversi.model.GameField;
+import oxytu.logic.ai.MinimumMoveAI;
 
 public class Main {
+	private static ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+	
 	public static void main(final String[] args) throws IOException {
 		final GameField field = newField();
 
 		final CellState player = CellState.WHITE;
 
 		final ReversiAI white = new MatrixAI(AIMatrix.fromResource("matrix.txt"));
-		final ReversiAI black = new MatrixAI2(new MatrixAI(AIMatrix.fromResource("matrix.txt"))); //
+		final ReversiAI black = new MinimumMoveAI(); //
+		
+		//final ReversiAI black = new MatrixAI2(new MatrixAI(AIMatrix.fromResource("matrix.txt"))); //
 
 		int draw = 0;
 		int whiteWins = 0;
 		int blackWins = 0;
+		
+		List<CellState> endStates = Collections.synchronizedList(new ArrayList<>());
 
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 100000; i++) {
 			System.out.print(".");
-			switch (runGame(field, player, black, white)) {
+			runGameAsynchronous(endStates, field, player, black, white);
+		}
+		
+		try {
+			service.shutdown();
+			service.awaitTermination(5, TimeUnit.MINUTES);
+		} catch (InterruptedException e) {
+			System.err.println("Aborting due to timeout - not all games were played.");
+		}
+		
+		for (CellState c : endStates) {
+			switch (c) {
 			case BLACK:
 				blackWins++;
 				break;
@@ -57,8 +82,11 @@ public class Main {
 		System.out.println(String.format("\n\nDraw: %d\n%s: %d\n%s: %d\n", draw, black.getClass().getSimpleName(), blackWins, white.getClass().getSimpleName(), whiteWins));
 	}
 
-	private static CellState runGame(GameField field, CellState player, final ReversiAI black, final ReversiAI white) throws IOException {
+	private static void runGameAsynchronous(List<CellState> endStates, GameField field, CellState player, final ReversiAI black, final ReversiAI white) throws IOException {
+		service.execute(() -> runGame(endStates, field, player, black, white));
+	}
 
+	private static void runGame(List<CellState> endStates, GameField field, CellState player, final ReversiAI black, final ReversiAI white) {
 		try {
 			while (true) {
 				try {
@@ -75,9 +103,9 @@ public class Main {
 			final long blackCount = field.countState(CellState.BLACK);
 
 			if (whiteCount == blackCount) {
-				return CellState.EMPTY;
+				endStates.add(CellState.EMPTY);
 			} else {
-				return blackCount > whiteCount ? CellState.BLACK : CellState.WHITE;
+				endStates.add(blackCount > whiteCount ? CellState.BLACK : CellState.WHITE);
 			}
 		}
 	}
