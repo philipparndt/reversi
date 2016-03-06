@@ -90,4 +90,8 @@ public class GameController {
 		return AIUtils.getPossibleMoves(this.getField(), this.getPlayer());
 	}
 
+	public String getGameState() {
+		return String.format("black: %d white: %s%nPlayer: %s", field.countState(CellState.BLACK), field.countState(CellState.WHITE), player);
+	}
+
 }

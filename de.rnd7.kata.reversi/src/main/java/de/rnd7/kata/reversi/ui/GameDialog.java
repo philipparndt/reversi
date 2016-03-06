@@ -29,6 +29,7 @@ import de.rnd7.kata.reversi.logic.ai.AIMatrix;
 import de.rnd7.kata.reversi.logic.ai.AlphaBetaPruningAI;
 import de.rnd7.kata.reversi.logic.ai.MatrixAI;
 import de.rnd7.kata.reversi.logic.ai.MatrixAI2;
+import de.rnd7.kata.reversi.logic.ai.MatrixAI3;
 import de.rnd7.kata.reversi.logic.ai.MinimaxAI;
 import de.rnd7.kata.reversi.logic.ai.ReversiAI;
 import de.rnd7.kata.reversi.model.Cell;
@@ -46,10 +47,12 @@ public class GameDialog {
 			new MatrixAI2(new MatrixAI(this.matrix)), 
 			new AlphaBetaPruningAI(), 
 			new MinimaxAI(),
-			new MinimumMoveAI());
+			new MinimumMoveAI(), 
+			new MatrixAI3(new MatrixAI(this.matrix)));
 	private final Map<String, ReversiAI> aiMap = this.ais.stream().collect(Collectors.toMap(x -> x.getClass().getSimpleName(), x -> x));
 
 	private final GameController controller = new GameController();
+	private Label label;
 
 	public GameDialog() throws IOException {
 
@@ -66,7 +69,7 @@ public class GameDialog {
 		final Button aiPlay = new Button(this.shell, SWT.NONE);
 		aiPlay.setText("AI Play");
 
-		final Label label = new Label(this.shell, SWT.NONE);
+		label = new Label(this.shell, SWT.NONE);
 		label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
 		final Canvas canvas = new Canvas(this.shell, SWT.BORDER);
@@ -89,6 +92,8 @@ public class GameDialog {
 
 		});
 
+		updateStateLabel();
+		
 		final Rectangle clientArea = this.shell.getClientArea();
 		this.shell.setBounds(clientArea.x + 10, clientArea.y + 10, 300, 300);
 		this.shell.open();
@@ -138,6 +143,8 @@ public class GameDialog {
 		}
 
 		canvas.redraw();
+		
+		updateStateLabel();
 	}
 
 	private void blackPlay(final Canvas canvas, final GameFieldRenderer renderer, final Cell cell) {
@@ -155,5 +162,11 @@ public class GameDialog {
 		}
 
 		canvas.redraw();
+		
+		updateStateLabel();
+	}
+
+	private void updateStateLabel() {
+		label.setText(controller.getGameState());
 	}
 }
