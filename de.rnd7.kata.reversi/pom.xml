@@ -19,7 +19,7 @@
 	</build>
 
 	<properties>
-		<swt.version>4.5.1</swt.version>
+		<swt.version>4.6.1</swt.version>
 	</properties>
 
 	<repositories>
